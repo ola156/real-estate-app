@@ -28,7 +28,9 @@ function Header() {
     <div className="p-6 px-5 md:px-10 flex justify-between shadow-sm fixed top-0 w-full z-1000 bg-white">
       <div className="flex gap-12 items-center">
         <div>
-          <Image src={"/logo.svg"} width={100} height={120} alt="logo" />
+          <Link href={"/"}>
+            <Image src={"/logo.svg"} width={100} height={120} alt="logo" />
+          </Link>
         </div>
         <ul className="hidden md:flex gap-10 ">
           <Link href={"/"}>

@@ -30,7 +30,7 @@ export default function Hero() {
 
           {/* Buttons Group */}
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-             <Link href="/for-rent" >
+             <Link href="/for-rent" className="w-full sm:w-auto">
             <Button 
               size="lg" 
               className="w-full sm:w-48 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 transition-all hover:scale-105 active:scale-95 text-md font-semibold h-14"
@@ -39,7 +39,7 @@ export default function Hero() {
             </Button>
 </Link> 
 
-            <Link href="/roommates" >
+            <Link href="/roommates" className="w-full sm:w-auto">
             <Button 
               size="lg" 
               variant="outline" className="w-full sm:w-48 border-grey-300 text-grey-700 hover:bg-grey-50 hover:border-grey-400 transition-all hover:scale-105 active:scale-95 text-md font-semibold h-14"
