@@ -30,7 +30,7 @@ export default function Contact() {
   };
 
   return (
-    <section className="py-5 bg-white px-6">
+    <section className="py-5 bg-white px-6" id="contact">
       <div className="container mx-auto max-w-xl">
         {/* Header */}
         <div className="text-center mb-10 space-y-3">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from '@/utils/client'; // Adjust based on your actual lib folder
+import { supabase } from '@/utils/client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,13 +14,14 @@ export default function AddRoommate() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   
-  // 1. Initialize State
+  // 1. Initialize State (Added gender)
   const [formData, setFormData] = useState({
     name: "",
     location: "",
     budget: "",
     lifestyle: "",
-    room_status: "Has a room", // Default value
+    room_status: "Has a room",
+    gender: "Male", // Default value
   });
 
   // 2. Handle Form Submission
@@ -38,16 +39,16 @@ export default function AddRoommate() {
             budget: formData.budget,
             lifestyle: formData.lifestyle,
             room_status: formData.room_status,
-            is_active: true, // Ensuring it shows up immediately
+            gender: formData.gender, // Sending gender to DB
+            is_active: true,
           },
         ]);
 
       if (error) throw error;
 
-      // 3. Success Feedback
       alert("Listing posted successfully!");
-      router.push("/roommates"); // Send them back to the listings
-      router.refresh(); // Refresh the data on the listings page
+      router.push("/roommates");
+      router.refresh();
     } catch (error) {
       console.error("Error adding listing:", error);
       alert("Something went wrong. Please try again.");
@@ -60,7 +61,6 @@ export default function AddRoommate() {
     <div className="min-h-screen bg-slate-50 pt-10 md:pt-28 pb-20 px-6">
       <div className="container mx-auto max-w-2xl">
         
-        {/* Back Button */}
         <Link 
           href="/roommates" 
           className="inline-flex items-center text-sm font-semibold text-slate-500 hover:text-blue-600 mb-8 transition-colors"
@@ -81,7 +81,6 @@ export default function AddRoommate() {
           <CardContent className="p-10 bg-white">
             <form onSubmit={onSubmit} className="space-y-6">
               
-              {/* Name Input */}
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">Your Name</label>
                 <Input 
@@ -92,7 +91,6 @@ export default function AddRoommate() {
                 />
               </div>
 
-              {/* Flex row for Location and Budget */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">Location</label>
@@ -114,19 +112,32 @@ export default function AddRoommate() {
                 </div>
               </div>
 
-              {/* Room Status Dropdown - Using standard select for simplicity */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">Room Status</label>
-                <select 
-                  className="w-full h-14 rounded-2xl border border-slate-100 bg-slate-50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  onChange={(e) => setFormData({...formData, room_status: e.target.value})}
-                >
-                  <option value="Has a room">I have a room (Looking for partner)</option>
-                  <option value="Needs a room">I need a room (Looking for space)</option>
-                </select>
+              {/* Gender and Room Status Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">Gender</label>
+                  <select 
+                    className="w-full h-14 rounded-2xl border border-slate-100 bg-slate-50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">Room Status</label>
+                  <select 
+                    className="w-full h-14 rounded-2xl border border-slate-100 bg-slate-50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    onChange={(e) => setFormData({...formData, room_status: e.target.value})}
+                  >
+                    <option value="Has a room">I have a room</option>
+                    <option value="Needs a room">I need a room</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Lifestyle Bio */}
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">Lifestyle / Intro</label>
                 <Textarea 
@@ -137,7 +148,6 @@ export default function AddRoommate() {
                 />
               </div>
 
-              {/* Submit Button */}
               <Button 
                 type="submit" 
                 disabled={loading}

@@ -229,7 +229,7 @@ export default function PropertyDetails() {
               <div className="bg-slate-50 rounded-[2.5rem] p-6 space-y-4">
                 <div className="flex justify-between items-center text-slate-500 font-bold text-sm">
                   <span>Yearly Rent</span>
-                  <span className="text-slate-900">{property?.rent}</span>
+                  <span className="text-slate-900">₦ {property?.rent}</span>
                 </div>
                 <div className="h-px bg-slate-200 w-full" />
                 <div className="flex justify-between items-center">
@@ -237,7 +237,7 @@ export default function PropertyDetails() {
                     Total Package
                   </span>
                   <span className="text-blue-600 font-black text-2xl tracking-tighter">
-                    {property?.totalPackage}
+                    ₦ {property?.totalPackage}
                   </span>
                 </div>
               </div>
@@ -248,7 +248,7 @@ export default function PropertyDetails() {
               <Button
                 onClick={() =>
                   window.open(
-                    `https://wa.me/${property?.agent_num}?text=I'm interested in ${property?.address}`,
+                    `https://wa.me/${property?.agent_num}?text=I am interested in the ${property?.propertyType} at ${property?.address} when can i come for inspection?`,
                     "_blank",
                   )
                 }

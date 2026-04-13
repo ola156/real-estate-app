@@ -2,6 +2,7 @@ import { Roboto } from 'next/font/google'
 import "./globals.css";
 import Provider from "./Provider";
 import { ClerkProvider } from '@clerk/nextjs';
+import { Toaster } from "sonner"; // 1. Import the Toaster
 
 const roboto = Roboto({
   weight: '400',
@@ -20,7 +21,7 @@ export default function RootLayout({ children }) {
 
         <Provider>
          {children}
-       
+       <Toaster position="top-center" richColors />
        </Provider>
       
       </body>

@@ -123,9 +123,10 @@ export default function ForRentPage() {
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
               >
                 <option value="10000000">Any Budget</option>
-                <option value="200000">Under ₦200k</option>
-                <option value="400000">Under ₦400k</option>
-                <option value="700000">Under ₦700k</option>
+                <option value="200000">₦100k - ₦200k</option>
+                <option value="400000">₦200k - ₦400k</option>
+                <option value="700000">₦400k - ₦700k</option>
+                <option value="1000000">₦700k - ₦1M</option>
               </select>
               <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
             </div>
@@ -197,7 +198,7 @@ export default function ForRentPage() {
           {/* Rent Row */}
           <div className="flex justify-between items-center text-sm font-medium text-slate-500 pb-3 border-b border-slate-50">
             <span>Base Rent (Per Annum)</span>
-            <span className="font-bold text-slate-800">{property.rent}</span>
+            <span className="font-bold text-slate-800">₦ {property.rent}</span>
           </div>
           
           {/* Total Package Row */}
@@ -206,7 +207,7 @@ export default function ForRentPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Package</span>
               <span className="text-[10px] text-slate-500 leading-tight">(Rent + Caution + Agency + Legal)</span>
             </div>
-            <span className="text-xl font-black text-blue-400 tracking-tight">{property.totalPackage}</span>
+            <span className="text-xl font-black text-blue-400 tracking-tight">₦ {property.totalPackage}</span>
           </div>
         </div>
       </div>
