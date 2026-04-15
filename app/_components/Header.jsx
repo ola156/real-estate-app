@@ -103,7 +103,9 @@ function Header() {
                 <DropdownMenuItem>
                  <Link href="/user">Profile</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>My Listing</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/user/my-listing">My Listing</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem><SignOutButton>Logout</SignOutButton></DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

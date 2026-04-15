@@ -51,8 +51,12 @@ export default function AgentListings() {
       );
     }
 
+    // Property Type Filter (Strictly using propertyType)
     if (propertyType) {
-      result = result.filter((l) => l.type === propertyType);
+      result = result.filter((l) => {
+        const dbValue = l.propertyType?.toString().trim();
+        return dbValue === propertyType;
+      });
     }
 
   // Range-based Price Filtering
@@ -204,7 +208,7 @@ export default function AgentListings() {
         {filteredListings.length === 0 && (
           <div className="text-center py-24 bg-slate-50 rounded-[4rem] border-2 border-dashed border-slate-200">
              <SlidersHorizontal className="mx-auto mb-4 text-slate-300" size={48} />
-             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No matches found for your search</p>
+             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No matches found for your search. Check back later we have more listings coming in every day!</p>
              <button 
                onClick={() => {setSearchQuery(""); setPropertyType(""); setMaxPrice("");}}
                className="mt-4 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline"

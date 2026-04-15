@@ -248,7 +248,7 @@ export default function PropertyDetails() {
               <Button
                 onClick={() =>
                   window.open(
-                    `https://wa.me/${property?.agent_num}?text=I am interested in the ${property?.propertyType} at ${property?.address} when can i come for inspection?`,
+                    `https://wa.me/${property?.agent_num}?text=I am interested in the ${property?.propertyType} at ${property?.address} you posted on Instrict Real Estate App. when can i come for inspection? `,
                     "_blank",
                   )
                 }

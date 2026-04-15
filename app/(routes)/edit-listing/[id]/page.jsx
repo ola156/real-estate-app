@@ -276,7 +276,7 @@ function EditListing({ params }) {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                    <Button
-                  className=" py-2 px-4 rounded-md"
+                  className=" py-2 px-4 rounded-md hidden"
                   type="button"
                   disabled={loading}>
                   {loading ? (
