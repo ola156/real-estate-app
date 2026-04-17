@@ -13,6 +13,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from "sonner";
 
 function UserListing() {
   const { user } = useUser()
@@ -59,11 +60,11 @@ function UserListing() {
      
     const { error } = await supabase.from('listing').delete().eq('id', id)
     if (!error) setListings((prev) => prev.filter((item) => item.id !== id))
-        alert('Listing deleted successfully.')
+        toast('Listing deleted successfully.')
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-2 md:p-6 md:pt-24 pt-7 pb-20">
+    <div className="max-w-4xl mx-auto p-2 md:p-6 md:pt-12 pt-5 pb-20">
       <div className="mb-12">
         <h2 className='font-black text-4xl text-slate-900 tracking-tighter'>
           Manage <span className="text-blue-600">Listings</span>

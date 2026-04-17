@@ -229,7 +229,7 @@ export default function ForRentPage() {
                       <div className="flex justify-between items-center text-sm font-medium text-slate-500 pb-3 border-b border-slate-50">
                         <span>Base Rent (Per Annum)</span>
                         <span className="font-bold text-slate-800">
-                          ₦ {property.rent}
+                           ₦ {Number(property?.rent).toLocaleString()}
                         </span>
                       </div>
 
@@ -244,7 +244,7 @@ export default function ForRentPage() {
                           </span>
                         </div>
                         <span className="text-xl font-black text-blue-400 tracking-tight">
-                          ₦ {property.totalPackage}
+                           ₦ {Number(property?.totalPackage).toLocaleString()}
                         </span>
                       </div>
                     </div>

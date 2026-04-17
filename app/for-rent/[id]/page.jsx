@@ -115,15 +115,15 @@ export default function PropertyDetails() {
                 className="w-full h-full object-cover"
               />
 
-              {/* Custom Overlay Controls */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+              {/* Custom Overlay Controls - Updated for visibility on small screens */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6 md:p-8">
                 <div className="flex justify-between items-center">
                   <button
                     onClick={toggleFullScreen}
-                    className="p-4 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-white/40 transition-all">
-                    <Maximize size={24} />
+                    className="p-3 md:p-4 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-white/40 active:scale-95 transition-all">
+                    <Maximize size={20} className="md:w-6 md:h-6" />
                   </button>
-                  <p className="text-white/80 ml-2 md:text-xs text-[10px] font-bold uppercase tracking-widest">
+                  <p className="text-white/90 ml-2 text-[10px] font-bold uppercase tracking-widest">
                     Virtual Tour Active
                   </p>
                 </div>
@@ -165,23 +165,24 @@ export default function PropertyDetails() {
           <div className="w-full md:mt-[150px] lg:mt-2 sm:mt-2 lg:w-[45%] flex flex-col justify-between py-4">
             <div className="space-y-8">
               {/* Header */}
-             <div className="flex justify-between gap-4 mb-4">
- <div >
-                <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-[0.2em] mb-3">
-                  <MapPin size={18} /> {property?.area || "Ibadan, Nigeria"}
+              <div className="flex justify-between gap-4 mb-4">
+                <div>
+                  <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-[0.2em] mb-3">
+                    <MapPin size={18} /> {property?.area || "Ibadan, Nigeria"}
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-black text-slate-950 tracking-tight leading-tight">
+                    {property?.address}
+                  </h1>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-950 tracking-tight leading-tight">
-                  {property?.address}
-                </h1>
-              </div>
-              <div className="flex flex-col md:gap-2 ">
+                <div className="flex flex-col md:gap-2 ">
                   <p className="text-[10px] md:text-sm font-light text-primary">
                     Agent Name :
                   </p>
-                  <p className=" text-sm md:text-md text-slate-900 font-bold ">{property?.agent || "Usman Olayinka"}</p>
+                  <p className=" text-sm md:text-md text-slate-900 font-bold ">
+                    {property?.agent || "Usman Olayinka"}
+                  </p>
+                </div>
               </div>
-             </div>
-             
 
               {/* Specs Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -195,7 +196,6 @@ export default function PropertyDetails() {
                 </div>
                 <div className="p-1 bg-slate-50 rounded-[2rem] border border-slate-100">
                   <div className="">
-                
                     {/* Date & Time Unit */}
                     <div className="p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                       <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">
@@ -226,10 +226,13 @@ export default function PropertyDetails() {
               </div>
 
               {/* Pricing breakdown */}
+
               <div className="bg-slate-50 rounded-[2.5rem] p-6 space-y-4">
                 <div className="flex justify-between items-center text-slate-500 font-bold text-sm">
                   <span>Yearly Rent</span>
-                  <span className="text-slate-900">₦ {property?.rent}</span>
+                  <span className="text-slate-900">
+                    ₦ {Number(property?.rent).toLocaleString()}
+                  </span>
                 </div>
                 <div className="h-px bg-slate-200 w-full" />
                 <div className="flex justify-between items-center">
@@ -237,7 +240,7 @@ export default function PropertyDetails() {
                     Total Package
                   </span>
                   <span className="text-blue-600 font-black text-2xl tracking-tighter">
-                    ₦ {property?.totalPackage}
+                    ₦ {Number(property?.totalPackage).toLocaleString()}
                   </span>
                 </div>
               </div>

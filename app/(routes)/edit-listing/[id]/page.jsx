@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -19,6 +19,7 @@ import { supabase } from "@/utils/client";
 import { useUser } from "@clerk/nextjs";
 import FileUpload from "../_components/FileUpload";
 import { Loader } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -38,11 +39,11 @@ function EditListing({ params }) {
   const router = useRouter();
 
   const [listingData, setListingData] = useState([]);
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState([]); // This will now hold {url, type} objects from Cloudinary
   const [loading, setLoading] = useState(false);
 
+  console.log('images:', images);
   useEffect(() => {
-    console.log(param.id);
     user && checkIsCorrectUser();
   }, [user]);
 
@@ -54,7 +55,6 @@ function EditListing({ params }) {
       .eq("id", param.id);
 
     if (data) {
-      console.log(data);
       setListingData(data[0]);
     }
 
@@ -65,101 +65,86 @@ function EditListing({ params }) {
 
   const onSubmitHandler = async (formValues) => {
     setLoading(true);
-    const { data, error } = await supabase
+
+    // 1. Update the main listing text data
+    const { data, error: updateError } = await supabase
       .from("listing")
       .update(formValues)
       .eq("id", param.id)
       .select();
 
-    if (data) {
-      console.log("data", data);
+    if (updateError) {
+      toast.error("Error updating listing details");
       setLoading(false);
-      alert("Listing updated successfully");
+      return;
     }
 
-    for (const image of images) {
-      setLoading(true);
-      const file = image;
-      console.log("file", file);
-      const fileName = Date.now().toString();
-      const fileExt = fileName.split(".").pop();
-      const { data, error } = await supabase.storage
-        .from("listingImages")
-        .upload(fileName, file, {
-          contentType: `video/${fileExt}`,
-          upsert: false,
-        });
-
-      if (error) {
-        setLoading(false);
-        alert(error);
-      } else {
-        const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL + fileName;
-        console.log(imageUrl);
-        const { data, error } = await supabase
+    // 2. Save Cloudinary URLs to listingImages table
+    // We only iterate if there are NEW images uploaded in this session
+    if (images.length > 0) {
+      for (const imageObj of images) {
+        const { error: imgError } = await supabase
           .from("listingImages")
-          .insert([{ url: imageUrl, listing_id: param?.id }])
-          .select();
+          .insert([{ 
+            url: imageObj, 
+            listing_id: param?.id 
+          }]);
 
-        if (data) {
-          console.log("image data", data);
-          setLoading(false);
-        }
-
-        if (error) {
-          setLoading(false);
+        if (imgError) {
+          console.error("Error saving image URL:", imgError);
         }
       }
+    }
+
+    setLoading(false);
+    toast.success("Listing updated successfully!");
+  };
+
+  const publishBtnHandler = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("listing")
+      .update({ active: true })
+      .eq("id", param.id)
+      .select();
+
+    if (data) {
       setLoading(false);
+      toast.success("Listing published successfully");
     }
   };
 
- const publishBtnHandler = async () => {
-  setLoading(true);
-  const { data, error } = await supabase.from("listing")
-  .update({ active: true })
-  .eq("id", param.id).select();
-
-  if(data) {
-    
-    setLoading(false);
-    alert("Listing published successfully");
-  }
-
-
- }
-
-
   return (
-    <div className="px-10 md:px-20">
-      <h2 className="font-bold md:text-xl text-md">
-        Enter some more details about your listing
+    <div className="px-10 md:px-20 py-10">
+      <h2 className="font-bold md:text-xl text-md mb-6">
+        Edit your listing details
       </h2>
       <Formik
+        enableReinitialize={true} // Important to show existing data
         initialValues={{
-          type: "rent",
-          propertyType: "",
-          rent: "",
-          totalPackage: "",
-          description: "",
+          type: listingData?.type || "Rent",
+          propertyType: listingData?.propertyType || "",
+          rent: listingData?.rent || "",
+          totalPackage: listingData?.totalPackage || "",
+          description: listingData?.description || "",
           profileImg: user?.imageUrl,
           fullName: user?.fullName,
-            agent: "",
-            agent_num: "",
+          agent: listingData?.agent || "",
+          agent_num: listingData?.agent_num || "",
         }}
-        onSubmit={(values) => {
-          console.log(values);
-          onSubmitHandler(values);
-        }}>
-        {({ values, handleChange, handleSubmit }) => (
+        onSubmit={(values) => onSubmitHandler(values)}
+      >
+        {({ values, handleChange, handleSubmit, setFieldValue }) => (
           <form onSubmit={handleSubmit}>
-            <div className="p-8 rounded-lg shadow-md">
+            <div className="p-8 rounded-[2.5rem] border border-slate-100 shadow-sm bg-white">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Rent or Sale */}
                 <div className="flex flex-col gap-2">
-                  <h2 className="text-gray-500 text-md">Rent or Sale</h2>
+                  <h2 className="text-gray-500 text-sm font-bold uppercase tracking-wider">Type</h2>
                   <RadioGroup
-                    defaultValue={listingData?.type}
-                    onValueChange={(v) => (values.type = v)}>
+                    value={values.type}
+                    onValueChange={(v) => setFieldValue("type", v)}
+                  >
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value="Rent" id="Rent" />
                       <Label htmlFor="Rent">Rent</Label>
@@ -170,30 +155,23 @@ function EditListing({ params }) {
                     </div>
                   </RadioGroup>
                 </div>
+
+                {/* Property Type */}
                 <div className="flex flex-col gap-2">
-                  <h2 className="text-md text-gray-500">Property Type</h2>
+                  <h2 className="text-sm text-gray-500 font-bold uppercase tracking-wider">Property Type</h2>
                   <Select
-                    defaultValue={listingData?.propertyType}
-                    onValueChange={(e) => (values.propertyType = e)}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue
-                        placeholder={
-                          listingData?.propertyType || "Select Property Type"
-                        }
-                      />
+                    value={values.propertyType}
+                    onValueChange={(e) => setFieldValue("propertyType", e)}
+                  >
+                    <SelectTrigger className="w-full h-12 rounded-xl border-slate-100 bg-slate-50">
+                      <SelectValue placeholder="Select Type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="Single Room">Single Room</SelectItem>
-                        <SelectItem value="Room in a flat">
-                          Room in a flat
-                        </SelectItem>
-                        <SelectItem value="Room self-contained">
-                          Room self-contained
-                        </SelectItem>
-                        <SelectItem value="Room and palor self-contained">
-                          Room and palor self-contained
-                        </SelectItem>
+                        <SelectItem value="Room in a flat">Room in a flat</SelectItem>
+                        <SelectItem value="Room self-contained">Room self-contained</SelectItem>
+                        <SelectItem value="Room and palor self-contained">Room and palor self-contained</SelectItem>
                         <SelectItem value="2 Bed Room">2 Bed Room</SelectItem>
                         <SelectItem value="3 Bed Room">3 Bed Room</SelectItem>
                       </SelectGroup>
@@ -201,104 +179,74 @@ function EditListing({ params }) {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-md text-gray-500">Rent</h2>
-                  <Input
-                    placeholder="Enter Rent Price"
-                    type="number"
-                    name="rent"
-                    onChange={handleChange}
-                    defaultValue={listingData?.rent}
-                  />
+
+              {/* Pricing and Agent */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+                <div className="space-y-2">
+                  <Label className="text-gray-500">Rent (₦)</Label>
+                  <Input type="number" name="rent" onChange={handleChange} value={values.rent} className="h-12 rounded-xl" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-md text-gray-500">Total Package</h2>
-                  <Input
-                    placeholder="Enter Total Package"
-                    type="number"
-                    name="totalPackage"
-                    onChange={handleChange}
-                    defaultValue={listingData?.totalPackage}
-                  />
+                <div className="space-y-2">
+                  <Label className="text-gray-500">Total Package (₦)</Label>
+                  <Input type="number" name="totalPackage" onChange={handleChange} value={values.totalPackage} className="h-12 rounded-xl" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-md text-gray-500">Agent</h2>
-                  <Input
-                    placeholder="Enter Agent Name"
-                    type="text"
-                    name="agent"
-                    onChange={handleChange}
-                    defaultValue={listingData?.agent}
-                  />
+                <div className="space-y-2">
+                  <Label className="text-gray-500">Agent Name</Label>
+                  <Input name="agent" onChange={handleChange} value={values.agent} className="h-12 rounded-xl" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-md text-gray-500">Agent Number</h2>
-                  <Input
-                    placeholder="Enter Agent Number"
-                    type="text"
-                    name="agent_num"
-                    onChange={handleChange}
-                    defaultValue={listingData?.agent_num}
-                  />
+                <div className="space-y-2">
+                  <Label className="text-gray-500">Agent Phone</Label>
+                  <Input name="agent_num" onChange={handleChange} value={values.agent_num} className="h-12 rounded-xl" />
                 </div>
               </div>
 
-              <div className="grid grid-col-1 gap-10 my-4">
-                <div children="flex flex-col gap-3">
-                  <h2 className="text-gray-500 text-md">Description</h2>
-                  <Textarea
-                    placeholder="Enter property description"
-                    name="description"
-                    onChange={handleChange}
-                    defaultValue={listingData?.description}
-                  />
-                </div>
+              {/* Description */}
+              <div className="mt-8 space-y-2">
+                <Label className="text-gray-500">Description</Label>
+                <Textarea name="description" onChange={handleChange} value={values.description} className="rounded-2xl min-h-[120px]" />
               </div>
-              <div className="my-5">
-                <h2 className="font-md text-gray-500 my-2">
-                  Upload Property Images or Videos
-                </h2>
+
+              {/* File Upload Section */}
+              <div className="my-10">
+                <h2 className="font-bold text-slate-800 mb-4">Property Media</h2>
                 <FileUpload
                   setImages={(value) => setImages(value)}
                   imageList={listingData.listingImages}
                 />
               </div>
-              <div className="flex gap-7  justify-end">
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 justify-end mt-10">
                 <Button
                   variant="outline"
-                  className=" py-2 px-4 rounded-md text-primary border-primary"
+                  className="h-14 px-8 rounded-2xl font-bold border-2"
                   type="submit"
-                  disabled={loading}>
-                  {loading ? <Loader className="animate-spin" /> : " Save"}
+                  disabled={loading}
+                >
+                  {loading ? <Loader className="animate-spin" /> : "Save Changes"}
                 </Button>
-               
+
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                   <Button
-                  className=" py-2 px-4 rounded-md hidden"
-                  type="button"
-                  disabled={loading}>
-                  {loading ? (
-                    <Loader className="animate-spin" />
-                  ) : (
-                    " Save & Publish"
-                  )}
-                </Button>
+                    <Button
+                      className="h-14 px-8 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 transition-all"
+                      type="button"
+                      disabled={loading || listingData?.active}
+                    >
+                      {listingData?.active ? "Published" : "Publish Listing"}
+                    </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="rounded-[2rem]">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>
-                      Ready to publish your listing?
-                      </AlertDialogTitle>
+                      <AlertDialogTitle>Ready to go live?</AlertDialogTitle>
                       <AlertDialogDescription>
-                      By clicking continue, your listing will be visible to everyone. Are you sure you want to publish?
+                        This will make your property visible to all potential renters on the platform.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => publishBtnHandler()}>
-                       {loading ? <Loader className="animate-spin" /> : " Continue"}
+                      <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={publishBtnHandler} className="rounded-xl bg-blue-600">
+                        Continue
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
