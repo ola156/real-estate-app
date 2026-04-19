@@ -34,9 +34,7 @@ export default function ForRentPage() {
         setLoading(true);
         const { data, error } = await supabase
           .from("listing")
-          .select("*") .eq("type", 'Rent')
-          .eq("active", true)
-          .order("created_at", { ascending: false });
+          .select("*").eq("type", 'Rent').eq("active", true).order("created_at", { ascending: false });
 
         if (error) throw error;
         setListings(data || []);
@@ -176,7 +174,7 @@ export default function ForRentPage() {
               <Link href={`/for-rent/${property.id}`} key={property.id}>
                 <div className="group cursor-pointer bg-white rounded-[3rem] border border-slate-300 p-4 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-50 hover:-translate-y-2 active:scale-[0.98] flex flex-col">
                   {/* 1. Verified Visual Top Area */}
-                  <div className="bg-slate-50/50 rounded-[2.5rem] h-52 flex items-center justify-center relative overflow-hidden border border-slate-100 mb-8">
+                  <div className="bg-slate-50/50 rounded-[2.5rem] h-52 flex items-center justify-center relative overflow-hidden border border-slate-200 mb-8">
                     {/* Subtle decorative grid background */}
                     <div
                       className="absolute inset-0 opacity-50"
