@@ -232,7 +232,7 @@ export default function ForRentPage() {
                       </div>
 
                       {/* Total Package Row */}
-                      <div className="flex justify-between items-center bg-slate-800 rounded-2xl p-5 text-white shadow-lg shadow-slate-200">
+                      <div className="flex justify-between items-center bg-slate-800 rounded-2xl p-3 md:p-5 text-white shadow-lg shadow-slate-200">
                         <div className="flex flex-col">
                           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                             Total Package
