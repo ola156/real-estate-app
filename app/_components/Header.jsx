@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { House, Plus, User, List, LogOut, ChevronDown } from "lucide-react";
+import { House, Plus, User, List, LogOut, ChevronDown, Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,85 +17,133 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 function Header() {
   const path = usePathname();
   const { user } = useUser();
 
-  useEffect(() => {
-    console.log(path);
-  }, [path]);
+  const NavLinks = ({ isMobile = false }) => (
+    <>
+      {[
+        { name: "Home", href: "/" },
+        { name: "For Rent", href: "/for-rent" },
+        { name: "For Sale", href: "/for-sale" },
+        { name: "Find A Roommate", href: "/roommates" },
+      ].map((link) => (
+        <Link key={link.href} href={link.href}>
+          <li
+            className={`${
+              path === link.href ? "text-primary font-bold" : "hover:text-primary text-slate-600"
+            } font-medium text-sm cursor-pointer list-none transition-all ${
+              isMobile ? "text-lg py-4 border-b border-slate-100" : ""
+            }`}
+          >
+            {link.name}
+          </li>
+        </Link>
+      ))}
+    </>
+  );
 
   return (
-    <div className="p-6 px-5 md:px-10 flex justify-between shadow-sm fixed top-0 w-full z-[1000] bg-white">
-      <div className="flex gap-12 items-center">
-        <div>
+    <div className="p-4 md:p-6 px-4 md:px-10 flex justify-between items-center shadow-sm fixed top-0 w-full z-40 bg-white">
+      <div className="flex gap-4 md:gap-8 items-center">
+        
+        {/* HAMBURGER: Visible below 1200px */}
+        <div className="min-[1201px]:hidden  z-50">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="hover:bg-slate-100">
+                <Menu className="h-6 w-6 text-slate-700" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-6">
+              {/* Accessibility: Screen Reader Only Header */}
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation Menu</SheetTitle>
+                <SheetDescription>
+                  Explore property listings, rentals, and roommates on Instrict.
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="flex flex-col gap-10 mt-6">
+                <Image 
+                  src={"/logo.svg"} 
+                  width={100} 
+                  height={40} 
+                  alt="Instrict Logo" 
+                  className="w-[100px]" 
+                />
+                <ul className="flex flex-col">
+                  <NavLinks isMobile={true} />
+                </ul>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* LOGO */}
+        <div className="flex-shrink-0">
           <Link href={"/"}>
-            <Image src={"/logo.svg"} width={100} height={120} alt="logo" />
+            <Image 
+              src={"/logo.svg"} 
+              width={100} 
+              height={120} 
+              alt="logo" 
+              className="w-[80px] md:w-[100px]" 
+            />
           </Link>
         </div>
-        <ul className="hidden md:flex gap-10 ">
-          <Link href={"/"}>
-            <li className={`${path === "/" ? "text-primary" : "hover:text-primary"} font-medium text-sm cursor-pointer`}>
-              Home
-            </li>
-          </Link>
-          <Link href={"/for-rent"}>
-            <li className={`${path === "/for-rent" ? "text-primary" : "hover:text-primary"} font-medium text-sm cursor-pointer`}>
-              For Rent
-            </li>
-          </Link>
-          <Link href={"/roommates"}>
-            <li className={`${path === "/roommates" ? "text-primary" : "hover:text-primary"} font-medium text-sm cursor-pointer transition-colors`}>
-              Find A Roommate
-            </li>
-          </Link>
+
+        {/* DESKTOP NAV: Hidden below 1200px */}
+        <ul className="hidden min-[1201px]:flex gap-8 items-center">
+          <NavLinks />
         </ul>
       </div>
 
       <div className="flex gap-2 items-center">
         <Show when="signed-out">
           <SignUpButton>
-            <Button variant="outline" className="hidden">
-              Login
-            </Button>
+            <Button variant="outline" className="hidden">Login</Button>
           </SignUpButton>
           <InspectionButton />
         </Show>
 
         <Show when="signed-in">
-          {/* Post New Ad Logic */}
-          <Link href={"/add-new-listing"} className="hidden md:block">
-            <Button className="flex gap-2">
-              <House className="h-5 w-5" /> Post New Ad
-            </Button>
-          </Link>
-          <Link href={"/add-new-listing"} className="md:hidden block">
-            <Button size="icon" className="flex gap-2">
-              <House className="h-5 w-5" />
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href={"/add-new-listing"}>
+              <Button className="flex gap-2 h-9 md:h-10 px-3 md:px-4">
+                <House className="h-4 w-4 md:h-5 md:w-5" /> 
+                <span className="hidden sm:block">Post New Ad</span>
+              </Button>
+            </Link>
 
-          {/* Add Roommates Logic (Fixed for mobile) */}
-          <Link href={"/add-roommate"} className="hidden md:block">
-            <Button className="flex gap-2"> Add Roommates</Button>
-          </Link>
-          <Link href={"/add-roommate"} className="md:hidden block">
-            <Button size="icon" className="flex gap-2">
-              <Plus className="h-5 w-5" />
-            </Button>
-          </Link>
+            <Link href={"/add-roommate"}>
+              <Button className="flex gap-2 h-9 md:h-10 px-3 md:px-4" variant="outline">
+                <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="hidden sm:block">Add Roommates</span>
+              </Button>
+            </Link>
+          </div>
 
-          {/* Styled Dropdown */}
+          {/* User Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 focus:outline-none ml-2">
+              <button className="flex items-center gap-1 focus:outline-none ml-1 md:ml-2">
                 <Image
                   src={user?.imageUrl}
                   width={35}
                   height={35}
                   alt="user profile"
-                  className="rounded-full border border-slate-200"
+                  className="rounded-full border border-slate-200 w-[30px] h-[30px] md:w-[35px] md:h-[35px]"
                 />
                 <ChevronDown size={14} className="text-slate-400 hidden md:block" />
               </button>

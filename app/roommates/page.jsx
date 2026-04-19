@@ -199,7 +199,7 @@ export default function RoommatePage() {
                     {person.roommate_images?.[0] ? (
                       <Image
                         src={person.roommate_images[0].url}
-                        alt="Room"
+                        alt=""
                         fill
                         className="object-cover opacity-30"
                       />

@@ -174,6 +174,7 @@ function EditListing({ params }) {
                         <SelectItem value="Room and palor self-contained">Room and palor self-contained</SelectItem>
                         <SelectItem value="2 Bed Room">2 Bed Room</SelectItem>
                         <SelectItem value="3 Bed Room">3 Bed Room</SelectItem>
+                        <SelectItem value="Land">Land</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
