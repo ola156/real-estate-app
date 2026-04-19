@@ -235,7 +235,7 @@ export default function AgentListings() {
                onClick={() => {setSearchQuery(""); setPropertyType(""); setMaxPrice(""); setCategory("All");}}
                className="mt-4 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline"
              >
-               Reset Filters
+               Reset Filters & Check back later
              </button>
           </div>
         )}

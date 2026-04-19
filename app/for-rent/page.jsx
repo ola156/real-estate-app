@@ -34,7 +34,7 @@ export default function ForRentPage() {
         setLoading(true);
         const { data, error } = await supabase
           .from("listing")
-          .select("*")
+          .select("*") .eq("type", 'Rent')
           .eq("active", true)
           .order("created_at", { ascending: false });
 
@@ -174,9 +174,9 @@ export default function ForRentPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {filteredListings.map((property) => (
               <Link href={`/for-rent/${property.id}`} key={property.id}>
-                <div className="group cursor-pointer bg-white rounded-[3rem] border border-slate-100 p-4 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-50 hover:-translate-y-2 active:scale-[0.98] flex flex-col">
+                <div className="group cursor-pointer bg-white rounded-[3rem] border border-slate-300 p-4 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-50 hover:-translate-y-2 active:scale-[0.98] flex flex-col">
                   {/* 1. Verified Visual Top Area */}
-                  <div className="bg-slate-50/50 rounded-[2.5rem] h-52 flex items-center justify-center relative overflow-hidden border border-slate-50 mb-8">
+                  <div className="bg-slate-50/50 rounded-[2.5rem] h-52 flex items-center justify-center relative overflow-hidden border border-slate-100 mb-8">
                     {/* Subtle decorative grid background */}
                     <div
                       className="absolute inset-0 opacity-50"
@@ -221,12 +221,12 @@ export default function ForRentPage() {
                     </div>
 
                     {/* Separator Line */}
-                    <div className="h-px w-full bg-slate-100 mb-6" />
+                    <div className="h-px w-full bg-slate-300 mb-6" />
 
                     {/* 3. Pricing Table - The Main transparent feature */}
                     <div className="space-y-4 mb-6 flex-grow">
                       {/* Rent Row */}
-                      <div className="flex justify-between items-center text-sm font-medium text-slate-500 pb-3 border-b border-slate-50">
+                      <div className="flex justify-between items-center text-sm font-medium text-slate-500 pb-3 border-b border-slate-100">
                         <span>Base Rent (Per Annum)</span>
                         <span className="font-bold text-slate-800">
                            ₦ {Number(property?.rent).toLocaleString()}

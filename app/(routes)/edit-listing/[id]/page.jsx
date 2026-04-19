@@ -217,7 +217,7 @@ function EditListing({ params }) {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 justify-end mt-10">
+              <div className="flex flex-col md:flex-row gap-4 justify-end mt-10">
                 <Button
                   variant="outline"
                   className="h-14 px-8 rounded-2xl font-bold border-2"

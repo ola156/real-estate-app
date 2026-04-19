@@ -6,6 +6,7 @@ import { useUser } from '@clerk/nextjs';
 import { Loader, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
+import { toast } from 'sonner';
 
 
 function AddNewListing() {
@@ -27,12 +28,12 @@ function AddNewListing() {
 
     if(data){
       setLoading(false)
-      alert('New Data added,',data)
+      toast('New Data added,',data)
       router.replace(`/edit-listing/${data[0].id}`)
 
     } else {
       setLoading(false)
-      alert('Error adding data,',error)
+      toast('Error adding data,',error)
     }
   }
 

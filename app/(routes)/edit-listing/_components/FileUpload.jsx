@@ -89,7 +89,7 @@ function FileUpload({ setImages, imageList }) {
               {file.type.startsWith("video/") ? (
                 <video src={file.url} controls className="w-full h-full object-cover" />
               ) : (
-                <Image src={file.url} alt="preview" fill className="object-cover" />
+                <Image src={file.url} alt="check" fill className="object-cover" />
               )}
             </div>
           ))}
