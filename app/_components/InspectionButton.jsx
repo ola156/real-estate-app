@@ -21,7 +21,7 @@ export default function InspectionButton() {
   return (
     <Button 
       onClick={handleInspectionRedirect}
-      className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 p-4 rounded-full shadow-lg shadow-blue-100 flex gap-2 transition-all hover:scale-105 active:scale-95"
+      className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 p-3 rounded-full shadow-lg shadow-blue-100 flex gap-2 transition-all hover:scale-105 active:scale-95"
     >
       <ClipboardCheck size={20} />
       Hire for Inspection

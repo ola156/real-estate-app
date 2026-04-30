@@ -37,12 +37,13 @@ function Header() {
         { name: "For Rent", href: "/for-rent" },
         { name: "For Sale", href: "/for-sale" },
         { name: "Find A Roommate", href: "/roommates" },
+         { name: "Shortlets", href: "/shortlet" },
       ].map((link) => (
         <Link key={link.href} href={link.href}>
           <li
             className={`${
               path === link.href ? "text-primary font-bold" : "hover:text-primary text-slate-600"
-            } font-medium text-sm cursor-pointer list-none transition-all ${
+            } font-medium text-xs cursor-pointer list-none transition-all ${
               isMobile ? "text-lg py-4 border-b border-slate-100" : ""
             }`}
           >

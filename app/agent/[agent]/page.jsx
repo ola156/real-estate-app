@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/utils/client";
-import { Loader2, MapPin, Search, User, ArrowLeft, SlidersHorizontal, Home } from "lucide-react";
+import { Loader2, MapPin, Search, User, ArrowLeft, SlidersHorizontal, Home, Moon } from "lucide-react";
 import Link from "next/link";
 
 export default function AgentListings() {
@@ -17,7 +17,7 @@ export default function AgentListings() {
   const [searchQuery, setSearchQuery] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [propertyType, setPropertyType] = useState("");
-  const [category, setCategory] = useState("All"); // NEW: Radio state
+  const [category, setCategory] = useState("All"); 
 
   useEffect(() => {
     async function fetchAgentProperties() {
@@ -45,7 +45,7 @@ export default function AgentListings() {
   useEffect(() => {
     let result = listings;
 
-    // Filter by Rent/Sale Category
+    // Filter by Rent/Sale/Shortlet Category
     if (category !== "All") {
       result = result.filter((l) => l.type === category);
     }
@@ -58,16 +58,13 @@ export default function AgentListings() {
     }
 
     if (propertyType) {
-      result = result.filter((l) => {
-        const dbValue = l.propertyType?.toString().trim();
-        return dbValue === propertyType;
-      });
+      result = result.filter((l) => l.propertyType?.trim() === propertyType);
     }
 
     if (maxPrice) {
       const [min, max] = maxPrice.split("-").map(Number);
       result = result.filter((l) => {
-        // Use rent for Rent items, totalPackage for Sale items
+        // Use rent for Rent/Shortlet items, totalPackage for Sale items
         const priceValue = l.type === "Sale" ? (l.totalPackage || 0) : (l.rent || 0);
         const numericPrice = typeof priceValue === 'number' ? priceValue : parseInt(String(priceValue).replace(/[^0-9]/g, ""), 10);
         
@@ -106,13 +103,13 @@ export default function AgentListings() {
           </div>
 
           <div className="flex flex-col gap-4">
-            {/* NEW: Radio Filter Group */}
-            <div className="flex bg-white p-1 rounded-2xl border border-slate-200 w-fit self-end">
-              {["All", "Rent", "Sale"].map((option) => (
+            {/* UPDATED: Added Shortlet to Radio Filter Group */}
+            <div className="flex bg-white p-1 rounded-2xl border border-slate-200 w-fit self-end overflow-x-auto max-w-full">
+              {["All", "Rent", "Sale", "Shortlet"].map((option) => (
                 <button
                   key={option}
                   onClick={() => setCategory(option)}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                     category === option 
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-100" 
                     : "text-slate-400 hover:text-slate-600"
@@ -129,14 +126,14 @@ export default function AgentListings() {
                 <input 
                   type="text"
                   placeholder="Search area..."
-                  className="pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 w-full lg:w-48"
+                  className="pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 w-full lg:w-48 shadow-inner"
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-3">
                 <select 
-                  className="px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[12px] md:text-sm font-medium focus:ring-2 focus:ring-blue-600 outline-none w-full appearance-none"
+                  className="px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[12px] md:text-sm font-medium focus:ring-2 focus:ring-blue-600 outline-none w-full appearance-none shadow-inner"
                   onChange={(e) => setPropertyType(e.target.value)}
                   value={propertyType}
                 >
@@ -145,22 +142,23 @@ export default function AgentListings() {
                   <option value="Room in a flat">Room in a flat</option>
                   <option value="Single Room">Single Room</option>
                   <option value="Room and palor self-contained">Room and palor self-contained</option>
+                  <option value="1 Bed Room">1 Bed Room</option>
                   <option value="2 Bed Room">2 Bed Room</option>
                   <option value="3 Bed Room">3 Bed Room</option>
                   <option value="Land">Land</option>
                 </select>
 
                 <select 
-                  className="px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[12px] md:text-sm font-medium focus:ring-2 focus:ring-blue-600 outline-none w-full appearance-none"
+                  className="px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[12px] md:text-sm font-medium focus:ring-2 focus:ring-blue-600 outline-none w-full appearance-none shadow-inner"
                   onChange={(e) => setMaxPrice(e.target.value)}
                   value={maxPrice}
                 >
                   <option value="">All Prices</option>
-                  <option value="100000-150000">₦100k - ₦150k</option>
-                  <option value="150001-300000">₦150k - ₦300k</option>
-                  <option value="300001-600000">₦300k - ₦600k</option>
-                  <option value="600001-1000000">₦600k - ₦1M</option>
-                  <option value="1000001">Above ₦1M</option>
+                  <option value="0-50000">Under ₦50k</option>
+                  <option value="50001-200000">₦50k - ₦200k</option>
+                  <option value="200001-600000">₦200k - ₦600k</option>
+                  <option value="600001-1500000">₦600k - ₦1.5M</option>
+                  <option value="1500001">Above ₦1.5M</option>
                 </select>
               </div>
             </div>
@@ -178,17 +176,18 @@ export default function AgentListings() {
                   muted loop
                   onMouseOver={(e) => (e.target).play()}
                   onMouseOut={(e) => (e.target).pause()}
+                  playsInline
                 />
                 
                 <div className="absolute top-6 left-6 flex gap-2">
                   <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-2xl text-slate-900 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm">
-                    <Home size={12} className="text-blue-600" />
-                    {item.propertyType || 'Property'}
+                    {item.type === "Shortlet" ? <Moon size={12} className="text-blue-600" /> : <Home size={12} className="text-blue-600" />}
+                    {item.propertyType === "Room and palor self-contained" ? "Room & palor self-con" : item.propertyType}
                   </div>
                 </div>
 
                 <div className="absolute top-6 right-6 bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl text-white text-[10px] font-bold uppercase tracking-widest border border-white/10">
-                  {item.type === "Rent" ? "For Rent" : item.type === "Sale" ? "For Sale" : "Listing"}
+                  {item.type === "Rent" ? "For Rent" : item.type === "Sale" ? "For Sale" : "Shortlet"}
                 </div>
               </div>
 
@@ -198,7 +197,7 @@ export default function AgentListings() {
                     <div className="flex items-center gap-2 text-blue-600 font-bold text-[10px] uppercase tracking-widest mb-2">
                       <MapPin size={14} /> {item.area || 'Ibadan'}
                     </div>
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tighter leading-tight line-clamp-1">
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tighter leading-tight line-clamp-1 uppercase">
                       {item.address}
                     </h3>
                   </div>
@@ -210,16 +209,19 @@ export default function AgentListings() {
                        }
                     </p>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                      {item.type === "Sale" ? "Asking Price" : "Per Annum"}
+                      {item.type === "Sale" ? "Asking Price" : item.type === "ShortLet" ? "Per Night" : "Per Annum"}
                     </p>
                   </div>
                 </div>
                 
                 <button 
-                  onClick={() => window.location.href = `/${item.type === "Sale" ? "for-sale" : "for-rent"}/${item.id}`}
+                  onClick={() => {
+                    const route = item.type === "Sale" ? "for-sale" : item.type === "ShortLet" ? "shortlet" : "for-rent";
+                    window.location.href = `/${route}/${item.id}`;
+                  }}
                   className="mt-auto w-full py-5 bg-slate-950 text-white rounded-[2rem] font-black text-sm hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-200"
                 >
-                  View Details
+                  {item.type === "Shortlet" ? "Book This Space" : "View Details"}
                 </button>
               </div>
             </div>
@@ -235,7 +237,7 @@ export default function AgentListings() {
                onClick={() => {setSearchQuery(""); setPropertyType(""); setMaxPrice(""); setCategory("All");}}
                className="mt-4 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline"
              >
-               Reset Filters & Check back later
+               Reset Filters
              </button>
           </div>
         )}

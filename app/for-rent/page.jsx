@@ -127,6 +127,7 @@ export default function ForRentPage() {
                 <option value="Room and palor self-contained">
                   Room and palor self-contained
                 </option>
+                <option value="1 Bed Room">1 Bed Room</option>
                 <option value="2 Bed Room">2 Bed Room</option>
                 <option value="3 Bed Room">3 Bed Room</option>
               </select>
@@ -162,7 +163,7 @@ export default function ForRentPage() {
       </section>
 
       {/* Grid Rendering */}
-      <section className="container mx-auto px-6 max-w-7xl">
+      <section className="container mx-auto px-4 max-w-7xl">
         {loading ? (
           <div className="flex flex-col items-center py-24">
             <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
@@ -206,7 +207,7 @@ export default function ForRentPage() {
                   </div>
 
                   {/* 2. Content Area */}
-                  <div className="px-5 flex flex-col flex-grow">
+                  <div className="px-3 flex flex-col flex-grow">
                     {/* Address and Area */}
                     <div className="flex flex-col mb-8">
                       <h3 className="text-sm md:text-xl font-black text-slate-950 tracking-tight group-hover:text-blue-600 transition-colors truncate">
@@ -232,7 +233,7 @@ export default function ForRentPage() {
                       </div>
 
                       {/* Total Package Row */}
-                      <div className="flex justify-between items-center bg-slate-800 rounded-2xl py-5 px-3 md:px-5 text-white shadow-lg shadow-slate-200">
+                      <div className="flex justify-between items-center bg-slate-800 rounded-2xl py-5 px-3 text-white shadow-lg shadow-slate-200">
                         <div className="flex flex-col">
                           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                             Total Package
@@ -241,7 +242,7 @@ export default function ForRentPage() {
                             (Rent + Caution + Agency + Legal)
                           </span>
                         </div>
-                        <span className="text-xl font-black text-blue-400 tracking-tight">
+                        <span className="text-[16px] font-black text-blue-400 tracking-tight">
                            ₦ {Number(property?.totalPackage).toLocaleString()}
                         </span>
                       </div>

@@ -153,6 +153,10 @@ function EditListing({ params }) {
                       <RadioGroupItem value="Sale" id="Sale" />
                       <Label htmlFor="Sale">Sale</Label>
                     </div>
+                      <div className="flex items-center gap-3">
+                      <RadioGroupItem value="ShortLet" id="ShortLet" />
+                      <Label htmlFor="ShortLet">ShortLet</Label>
+                    </div>
                   </RadioGroup>
                 </div>
 
@@ -172,6 +176,7 @@ function EditListing({ params }) {
                         <SelectItem value="Room in a flat">Room in a flat</SelectItem>
                         <SelectItem value="Room self-contained">Room self-contained</SelectItem>
                         <SelectItem value="Room and palor self-contained">Room and palor self-contained</SelectItem>
+                        <SelectItem value="1 Bed Room">1 Bed Room</SelectItem>
                         <SelectItem value="2 Bed Room">2 Bed Room</SelectItem>
                         <SelectItem value="3 Bed Room">3 Bed Room</SelectItem>
                         <SelectItem value="Land">Land</SelectItem>
