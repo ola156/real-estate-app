@@ -105,7 +105,7 @@ export default function AgentListings() {
           <div className="flex flex-col gap-4">
             {/* UPDATED: Added Shortlet to Radio Filter Group */}
             <div className="flex bg-white p-1 rounded-2xl border border-slate-200 w-fit self-end overflow-x-auto max-w-full">
-              {["All", "Rent", "Sale", "Shortlet"].map((option) => (
+              {["All", "Rent", "Sale", "ShortLet"].map((option) => (
                 <button
                   key={option}
                   onClick={() => setCategory(option)}
