@@ -46,7 +46,7 @@ export default function ShortletDetail() {
   }, [id]);
 
   const handleBooking = () => {
-    const message = `Hello, I'm interested in booking the Shortlet at ${listing.address} (${listing.area}) priced at ₦${Number(listing.rent).toLocaleString()} per night.`;
+    const message = `Hello, I'm interested in booking the Shortlet at ${listing.address} ibadan) priced at ₦${Number(listing.rent).toLocaleString()} per day.`;
     const whatsappUrl = `https://wa.me/${listing.agent_num}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -74,7 +74,7 @@ export default function ShortletDetail() {
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-6 mt-8">
+      <main className="max-w-6xl mx-auto px-6 mt-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Left Column: Visuals & Info */}
           <div className="lg:col-span-8">

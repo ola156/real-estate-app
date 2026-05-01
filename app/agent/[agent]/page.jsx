@@ -209,7 +209,7 @@ export default function AgentListings() {
                        }
                     </p>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                      {item.type === "Sale" ? "Asking Price" : item.type === "ShortLet" ? "Per Night" : "Per Annum"}
+                      {item.type === "Sale" ? "Asking Price" : item.type === "ShortLet" ? "Per Day" : "Per Annum"}
                     </p>
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export default function AgentListings() {
                   }}
                   className="mt-auto w-full py-5 bg-slate-950 text-white rounded-[2rem] font-black text-sm hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-200"
                 >
-                  {item.type === "Shortlet" ? "Book This Space" : "View Details"}
+                  {item.type === "ShortLet" ? "Book This Space" : "View Details"}
                 </button>
               </div>
             </div>
