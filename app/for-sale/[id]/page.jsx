@@ -17,12 +17,23 @@ import {
 export default function SaleDescriptionPage() {
   const { id } = useParams();
   const router = useRouter();
-  const videoRef = useRef(null);
+  const mediaRef = useRef(null); // Renamed for generic media use
 
   const [property, setProperty] = useState(null);
-  const [videos, setVideos] = useState([]);
-  const [activeVideo, setActiveVideo] = useState(null);
+  const [agent, setAgent] = useState(null);
+  const [mediaItems, setMediaItems] = useState([]); // Renamed from videos
+  const [activeMedia, setActiveMedia] = useState(null); // Renamed from activeVideo
   const [loading, setLoading] = useState(true);
+
+  // HELPER: Detect if URL is a video
+  const isVideo = (url) => {
+    if (!url) return false;
+    const videoExtensions = [".mp4", ".webm", ".ogg", ".mov", ".quicktime"];
+    return (
+      videoExtensions.some((ext) => url.toLowerCase().endsWith(ext)) ||
+      url.includes("video")
+    );
+  };
 
   useEffect(() => {
     async function getFullDetails() {
@@ -34,16 +45,25 @@ export default function SaleDescriptionPage() {
           .eq("id", id)
           .single();
 
-        const { data: videoData } = await supabase
+        const { data: mediaData } = await supabase
           .from("listingImages")
           .select("url")
           .eq("listing_id", id);
 
+        if (propertyData?.user_id) {
+          const { data: agentData } = await supabase
+            .from("profiles")
+            .select("agency_name, phoneNo")
+            .eq("id", propertyData.user_id)
+            .single();
+          if (agentData) setAgent(agentData);
+        }
+
         if (propError) throw propError;
 
         setProperty(propertyData);
-        setVideos(videoData || []);
-        if (videoData?.length > 0) setActiveVideo(videoData[0].url);
+        setMediaItems(mediaData || []);
+        if (mediaData?.length > 0) setActiveMedia(mediaData[0].url);
       } catch (error) {
         console.error("Error:", error);
       } finally {
@@ -54,8 +74,8 @@ export default function SaleDescriptionPage() {
   }, [id]);
 
   const toggleFullScreen = () => {
-    if (videoRef.current?.requestFullscreen) {
-      videoRef.current.requestFullscreen();
+    if (mediaRef.current?.requestFullscreen) {
+      mediaRef.current.requestFullscreen();
     }
   };
 
@@ -81,11 +101,15 @@ export default function SaleDescriptionPage() {
       </div>
     );
 
-  if (!property) return <div className="p-20 text-center font-black uppercase">Property Not Found</div>;
+  if (!property)
+    return (
+      <div className="p-20 text-center font-black uppercase">
+        Property Not Found
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Top Nav - Responsive Padding */}
+    <div className="min-h-screen bg-white mt-25">
       <div className="py-4 px-4 md:px-6 max-w-7xl mx-auto">
         <button
           onClick={() => router.back()}
@@ -97,25 +121,35 @@ export default function SaleDescriptionPage() {
 
       <main className="container mx-auto px-4 md:px-6 py-4">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-          
-          {/* LEFT SIDE: Video Theatre - Sticky on Desktop, Static on Mobile */}
+          {/* LEFT SIDE: Media Theatre */}
           <div className="w-full lg:w-[40%] lg:sticky lg:top-10 h-fit">
             <div className="relative group aspect-[4/5] sm:aspect-video lg:aspect-[5/6] bg-slate-100 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200">
-              {activeVideo ? (
-                <video
-                  ref={videoRef}
-                  key={activeVideo}
-                  src={activeVideo}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+              {activeMedia ? (
+                isVideo(activeMedia) ? (
+                  <video
+                    ref={mediaRef}
+                    key={activeMedia}
+                    src={activeMedia}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    ref={mediaRef}
+                    src={activeMedia}
+                    alt="Property"
+                    className="w-full h-full object-cover"
+                  />
+                )
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-4">
                   <Building size={48} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">No Video Available</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    No Media Available
+                  </span>
                 </div>
               )}
 
@@ -129,34 +163,45 @@ export default function SaleDescriptionPage() {
                     <Maximize size={20} />
                   </button>
                   <p className="text-white/90 text-[10px] font-bold uppercase tracking-widest">
-                    Virtual Property Tour
+                    {isVideo(activeMedia) ? "Virtual Tour" : "Property Photo"}
                   </p>
                 </div>
               </div>
 
-              {/* Verified Tag */}
               {property?.active && (
                 <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl flex items-center gap-2 shadow-lg">
                   <ShieldCheck size={14} className="md:w-4 md:h-4" />
-                  <span className="text-[9px] md:text-[10px] font-black uppercase">Verified Listing</span>
+                  <span className="text-[9px] md:text-[10px] font-black uppercase">
+                    Verified Listing
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* Thumbnails - Horizontal Scroll on Mobile */}
-            {videos.length > 1 && (
+            {/* Thumbnails */}
+            {mediaItems.length > 1 && (
               <div className="flex gap-3 mt-6 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
-                {videos.map((vid, idx) => (
+                {mediaItems.map((item, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setActiveVideo(vid.url)}
+                    onClick={() => setActiveMedia(item.url)}
                     className={`relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl md:rounded-3xl overflow-hidden border-4 transition-all ${
-                      activeVideo === vid.url ? "border-blue-600 scale-105" : "border-transparent opacity-60"
+                      activeMedia === item.url
+                        ? "border-blue-600 scale-105"
+                        : "border-transparent opacity-60"
                     }`}
                   >
-                    <video className="w-full h-full object-cover pointer-events-none">
-                      <source src={vid.url} />
-                    </video>
+                    {isVideo(item.url) ? (
+                      <video className="w-full h-full object-cover pointer-events-none">
+                        <source src={item.url} />
+                      </video>
+                    ) : (
+                      <img
+                        src={item.url}
+                        className="w-full h-full object-cover"
+                        alt={`thumb-${idx}`}
+                      />
+                    )}
                   </button>
                 ))}
               </div>
@@ -166,28 +211,32 @@ export default function SaleDescriptionPage() {
           {/* RIGHT SIDE: Information */}
           <div className="w-full lg:w-[55%] flex flex-col py-2">
             <div className="space-y-8 md:space-y-10">
-              
               {/* Header Info */}
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-blue-600 font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]">
+                  <div className="flex items-center gap-2 text-blue-400 font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]">
                     <MapPin size={16} /> {property?.address}
                   </div>
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl  mt-2 font-black text-slate-950 tracking-tight leading-none uppercase ">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl mt-2 font-black text-slate-950 tracking-tight leading-none uppercase">
                     {property?.propertyType}
                   </h1>
                 </div>
-               
               </div>
 
-              {/* Specs Grid - Responsive Columns */}
+              {/* Specs Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 px-5 py-3 rounded-2xl border border-slate-100 w-full sm:w-auto">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Agent</p>
-                  <p className="text-sm font-black text-slate-900">{property?.agent || "Official Agent"}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">
+                    Agent
+                  </p>
+                  <p className="text-sm font-black text-slate-900">
+                    {agent?.agency_name || property?.agent || "Verified Agent"}
+                  </p>
                 </div>
                 <div className="px-6 py-5 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Listed On</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">
+                    Listed On
+                  </p>
                   <div className="flex items-baseline gap-2">
                     <p className="font-bold text-slate-900 text-sm md:text-base">
                       {formatDateTime(property?.created_at).date}
@@ -201,30 +250,43 @@ export default function SaleDescriptionPage() {
 
               {/* Description */}
               <div className="space-y-3">
-                <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest opacity-50">Property Description</h3>
+                <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest opacity-50">
+                  Property Description
+                </h3>
                 <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
-                  {property?.description || "High-value real estate opportunity in Ibadan with premium documentation and verified ownership."}
+                  {property?.description ||
+                    "High-value real estate opportunity."}
                 </p>
               </div>
 
               {/* Pricing Section */}
               <div className="bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 space-y-2 border border-slate-800 shadow-xl shadow-slate-100">
-                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">Asking Price</p>
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">
+                  Asking Price
+                </p>
                 <div className="flex items-baseline gap-2">
-                   <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter">
+                  <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter">
                     ₦ {Number(property?.totalPackage).toLocaleString()}
                   </h2>
                 </div>
-                <p className="text-[10px] text-slate-400 font-medium italic">Includes all legal documentation and transfer fees</p>
+                <p className="text-[10px] text-slate-400 font-medium italic">
+                  Includes all legal documentation and transfer fees
+                </p>
               </div>
             </div>
 
-            {/* Action Button - Floating/Large at bottom */}
+            {/* Action Button */}
             <div className="mt-10 md:mt-14">
               <Button
                 onClick={() =>
                   window.open(
-                    `https://wa.me/${property?.agent_num || "2348087442174"}?text=I am interested in buying the ${property?.propertyType} at ${property?.address}. I saw the listing on your Instrict Website and would like to schedule an inspection.`,
+                    `https://wa.me/${
+                      agent?.phoneNo || property?.agent_num
+                    }?text=I am interested in buying the ${
+                      property?.propertyType
+                    } at ${
+                      property?.address
+                    }. I saw the listing on your Instrict Website and would like to schedule an inspection.`,
                     "_blank"
                   )
                 }

@@ -93,7 +93,7 @@ export default function RoommatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-10 pb-20 px-4">
+    <div className="min-h-screen bg-slate-50 pt-10 pb-20 px-4 mt-20">
   <section className="container mx-auto max-w-7xl">
     {/* --- HERO HEADER --- */}
     <section className="container mx-auto max-w-7xl text-center mb-16">

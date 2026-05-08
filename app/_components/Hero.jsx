@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative w-full pt-1  min-h-[80vh] flex items-center justify-center bg-white px-4">
+    <section className="relative w-full pt-1  min-h-[80vh] flex items-center justify-center bg-white px-4 mt-28">
       {/* Optional: Subtle background pattern or gradient for a modern feel */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:32px_32px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20" />
 

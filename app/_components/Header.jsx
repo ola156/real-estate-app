@@ -2,20 +2,20 @@
 import { Button } from "@/components/ui/button";
 import {
   House,
-  Plus,
   User,
   List,
   LogOut,
   ChevronDown,
   Menu,
+  ShieldCheck,
+  Briefcase,
+  LayoutDashboard,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import React, { useState } from "react";
-import { Show, SignOutButton, SignUpButton } from "@clerk/nextjs";
-import InspectionButton from "./InspectionButton";
-import { useUser } from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/utils/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,13 +31,58 @@ import {
   SheetTrigger,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
+import InspectionButton from "./InspectionButton";
 
 function Header() {
   const path = usePathname();
-  const { user } = useUser();
-  const [open, setOpen] = useState(false); 
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+
+  // Define paths where header should be hidden
+  const hideHeaderPaths = [ '/login', "/login/auth", '/dashboard/agent', '/dashboard/admin','/auth'];
+
+  useEffect(() => {
+    const updateUserData = (session) => {
+      if (session?.user) {
+        setUser(session.user);
+        const userRole = session.user.user_metadata?.user_role || "user";
+        setRole(userRole);
+      } else {
+        setUser(null);
+        setRole(null);
+      }
+    };
+
+    const getUserData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      updateUserData(session);
+    };
+    getUserData();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      updateUserData(session);
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        router.refresh();
+      }
+    });
+
+    return () => authListener.subscription.unsubscribe();
+  }, [router]);
+
+  // Hide header on login/signup pages
+  if (hideHeaderPaths.includes(path)) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setRole(null);
+    router.push("/");
+  };
 
   const NavLinks = ({ isMobile = false, closeMenu }) => (
     <>
@@ -51,16 +96,11 @@ function Header() {
         <Link
           key={link.href}
           href={link.href}
-          // The magic happens here: triggers the slide-out animation
-          onClick={() => {
-            if (isMobile && closeMenu) closeMenu();
-          }}
+          onClick={() => isMobile && closeMenu && closeMenu()}
         >
           <li
             className={`${
-              path === link.href
-                ? "text-primary font-bold"
-                : "hover:text-primary text-slate-600"
+              path === link.href ? "text-primary font-bold" : "hover:text-primary text-slate-600"
             } font-medium text-xs cursor-pointer list-none transition-all duration-300 ${
               isMobile ? "text-lg py-6 border-b border-slate-100" : ""
             }`}
@@ -73,42 +113,22 @@ function Header() {
   );
 
   return (
-    <div className="p-4 md:p-6 px-4 md:px-10 flex justify-between items-center shadow-sm fixed top-0 w-full z-40 bg-white">
+    <div className=" p-4 md:p-6 px-4 md:px-10 flex justify-between items-center shadow-sm fixed top-0 w-full z-40 bg-white">
       <div className="flex gap-4 md:gap-8 items-center">
-        
         {/* MOBILE MENU */}
         <div className="min-[1201px]:hidden z-50">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-slate-100"
-              >
+              <Button variant="ghost" size="icon" className="hover:bg-slate-100">
                 <Menu className="h-6 w-6 text-slate-700" />
               </Button>
             </SheetTrigger>
-            
-            {/* The classes here match your sheet.tsx for maximum smoothness */}
-            <SheetContent
-              side="left"
-              className="w-[300px] p-0 flex flex-col" 
-            >
+            <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
               <SheetHeader className="sr-only">
                 <SheetTitle>Navigation Menu</SheetTitle>
-                <SheetDescription>
-                  Explore property listings and roommates.
-                </SheetDescription>
               </SheetHeader>
-
               <div className="flex flex-col p-8 mt-4">
-                <Image
-                  src={"/logo.svg"}
-                  width={100}
-                  height={40}
-                  alt="Instrict Logo"
-                  className="mb-10"
-                />
+                <Image src={"/logo.svg"} width={100} height={40} alt="Logo" className="mb-10" />
                 <ul className="flex flex-col">
                   <NavLinks isMobile={true} closeMenu={() => setOpen(false)} />
                 </ul>
@@ -120,13 +140,7 @@ function Header() {
         {/* LOGO */}
         <div className="flex-shrink-0">
           <Link href={"/"}>
-            <Image
-              src={"/logo.svg"}
-              width={100}
-              height={120}
-              alt="logo"
-              className="w-[80px] md:w-[100px]"
-            />
+            <Image src={"/logo.svg"} width={100} height={120} alt="logo" className="w-[80px] md:w-[100px]" />
           </Link>
         </div>
 
@@ -136,78 +150,67 @@ function Header() {
         </ul>
       </div>
 
-      {/* ACTION BUTTONS & USER PROFILE */}
       <div className="flex gap-2 items-center">
-        <Show when="signed-out">
-          <SignUpButton>
-            <Button variant="outline" className="hidden">Login</Button>
-          </SignUpButton>
-          <InspectionButton />
-        </Show>
+        {!user ? (
+          <Link href="/login">
+            <Button variant="outline" className="text-xs font-bold">Sign In</Button>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-4">
+           
 
-        <Show when="signed-in">
-          <div className="flex gap-2">
-            <Link href={"/add-new-listing"}>
-              <Button className="flex gap-2 h-9 md:h-10 px-3 md:px-4">
-                <House className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="hidden sm:block">Post New Ad</span>
-              </Button>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 focus:outline-none">
+                  <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shadow-sm">
+                    {user?.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} width={36} height={36} alt="profile" className="object-cover" />
+                    ) : (
+                      <User size={20} className="text-slate-400" />
+                    )}
+                  </div>
+                  <ChevronDown size={14} className="text-slate-400 hidden md:block" />
+                </button>
+              </DropdownMenuTrigger>
 
-            <Link href={"/add-roommate"}>
-              <Button
-                className="flex gap-2 h-9 md:h-10 px-3 md:px-4"
-                variant="outline"
-              >
-                <Plus className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="hidden sm:block">Add Roommates</span>
-              </Button>
-            </Link>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 focus:outline-none ml-1 md:ml-2">
-                <Image
-                  src={user?.imageUrl}
-                  width={35}
-                  height={35}
-                  alt="user profile"
-                  className="rounded-full border border-slate-200 w-[30px] h-[30px] md:w-[35px] md:h-[35px]"
-                />
-                <ChevronDown size={14} className="text-slate-400 hidden md:block" />
-              </button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent
-              align="end"
-              className="w-52 mt-2 p-2 rounded-xl shadow-lg border-slate-100"
-            >
-              <DropdownMenuLabel className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 py-2">
-                My Account
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <Link href="/user">
-                  <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-lg cursor-pointer">
-                    <User size={16} /> Profile
-                  </DropdownMenuItem>
-                </Link>
-                <Link href="/user/my-listing">
-                  <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-lg cursor-pointer">
-                    <List size={16} /> My Listing
-                  </DropdownMenuItem>
-                </Link>
+              <DropdownMenuContent align="end" className="w-56 mt-2 p-2 rounded-xl shadow-lg border-slate-100">
+                <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-3 py-2">
+                  My Account ({role})
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <SignOutButton>
-                  <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-lg cursor-pointer text-red-500 focus:text-red-500">
+                
+                <DropdownMenuGroup>
+                  {/* DASHBOARD (Conditional for Agents/Admins) */}
+                  {(role === 'agent' || role === 'admin') && (
+                    <Link href={role === 'admin' ? "/dashboard/admin" : "/dashboard/agent"}>
+                      <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-lg cursor-pointer font-medium">
+                        <LayoutDashboard size={16} className="text-primary" /> Dashboard
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
+
+                  
+
+                   {/* Show Post Ad only for regular users, otherwise only show profile dropdown */}
+            {role !== 'admin' && role !== 'agent' && (
+             <InspectionButton />
+            )}
+                  
+
+                  <DropdownMenuSeparator />
+                  
+                  {/* LOGOUT */}
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 p-3 rounded-lg cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-50"
+                  >
                     <LogOut size={16} /> Logout
                   </DropdownMenuItem>
-                </SignOutButton>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </Show>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
     </div>
   );

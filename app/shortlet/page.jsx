@@ -69,7 +69,7 @@ export default function ShortletListings() {
   );
 
   return (
-    <div className="min-h-screen bg-white pb-20 md:pt-14 pt-3">
+    <div className="min-h-screen bg-white pb-20 md:pt-14 pt-3 mt-25">
       <div className="max-w-6xl mx-auto px-6">
         
         <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-900 font-bold text-[10px] uppercase tracking-widest mb-8 transition-colors">

@@ -64,7 +64,7 @@ export default function ForSalePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-3 pb-20 px-4 md:px-10">
+    <div className="min-h-screen bg-white mt-25 pt-3 pb-20 px-4 md:px-10">
       {/* --- SEARCH & FILTER BAR --- */}
       <section className="max-w-7xl mx-auto mb-12">
         <div className="flex flex-col md:flex-row gap-4 items-center bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-sm">

@@ -85,7 +85,7 @@ export default function ForRentPage() {
   }, [searchTerm, maxPrice, roomType, listings]);
 
   return (
-    <div className="min-h-screen bg-white pb-10 ">
+    <div className="min-h-screen bg-white pb-10 mt-25">
       <section className="container mx-auto px-6 mb-16">
         <div className="max-w-5xl mx-auto space-y-8">
           <div className="text-center">

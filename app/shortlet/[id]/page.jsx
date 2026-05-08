@@ -1,28 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/client";
 import {
   Loader2,
   MapPin,
   ArrowLeft,
-  Share2,
   CheckCircle2,
-  Coffee,
-  Wifi,
-  Car,
   ShieldCheck,
-  Tv,
-  Wind,
   Calendar,
+  Maximize,
+  Image as ImageIcon,
 } from "lucide-react";
 
 export default function ShortletDetail() {
   const { id } = useParams();
   const router = useRouter();
+  const mediaRef = useRef(null);
+
   const [listing, setListing] = useState(null);
+  const [agent, setAgent] = useState(null);
+  const [mediaItems, setMediaItems] = useState([]);
+  const [activeMedia, setActiveMedia] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // HELPER: Detect if URL is a video
+  const isVideo = (url) => {
+    if (!url) return false;
+    const videoExtensions = [".mp4", ".webm", ".ogg", ".mov", ".quicktime"];
+    return (
+      videoExtensions.some((ext) => url.toLowerCase().endsWith(ext)) ||
+      url.includes("video")
+    );
+  };
 
   useEffect(() => {
     async function fetchDetails() {
@@ -34,8 +45,23 @@ export default function ShortletDetail() {
           .eq("id", id)
           .single();
 
+        if (data?.user_id) {
+          const { data: agentData } = await supabase
+            .from("profiles")
+            .select("agency_name, phoneNo")
+            .eq("id", data.user_id)
+            .single();
+          if (agentData) setAgent(agentData);
+        }
+
         if (error) throw error;
+        
         setListing(data);
+        // Extract images/videos from the join
+        const media = data.listingImages || [];
+        setMediaItems(media);
+        if (media.length > 0) setActiveMedia(media[0].url);
+        
       } catch (err) {
         console.error("Error fetching detail:", err);
       } finally {
@@ -46,9 +72,15 @@ export default function ShortletDetail() {
   }, [id]);
 
   const handleBooking = () => {
-    const message = `Hello, I'm interested in booking the Shortlet at ${listing.address} ibadan) priced at ₦${Number(listing.rent).toLocaleString()} per day.`;
-    const whatsappUrl = `https://wa.me/${listing.agent_num}?text=${encodeURIComponent(message)}`;
+    const message = `Hello, I'm interested in booking the Shortlet at ${listing.address} priced at ₦${Number(listing.rent).toLocaleString()} per day.`;
+    const whatsappUrl = `https://wa.me/${agent?.phoneNo || listing.agent_num}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
+  };
+
+  const toggleFullScreen = () => {
+    if (mediaRef.current?.requestFullscreen) {
+      mediaRef.current.requestFullscreen();
+    }
   };
 
   if (loading)
@@ -59,16 +91,17 @@ export default function ShortletDetail() {
     );
 
   if (!listing)
-    return <div className="p-20 text-center font-bold">Listing not found.</div>;
+    return <div className="p-20 text-center font-bold uppercase">Listing not found.</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20 mt-20">
       {/* Header Navigation */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest text-slate-900">
+            className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest text-slate-900 hover:text-blue-600 transition-colors"
+          >
             <ArrowLeft size={16} /> Back
           </button>
         </div>
@@ -76,58 +109,82 @@ export default function ShortletDetail() {
 
       <main className="max-w-6xl mx-auto px-6 mt-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
           {/* Left Column: Visuals & Info */}
           <div className="lg:col-span-8">
-           <div className="relative w-full lg:aspect-[21/9] aspect-[4/3] rounded-[3rem] overflow-hidden bg-black shadow-2xl border-[6px] md:border-[10px] border-white group transition-all duration-500">
-    <video 
-      id="shortlet-video"
-      src={listing.listingImages?.[0]?.url} 
-      className="w-full h-full object-cover"
-      autoPlay 
-      muted 
-      loop
-      playsInline
-    />
-    
-    {/* Status Badge */}
-    <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-5 py-2 rounded-2xl shadow-xl z-10">
-       <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Premium Stay</p>
-    </div>
+            {/* MAIN MEDIA THEATRE */}
+            <div className="relative w-full lg:aspect-[16/10] aspect-[4/3] rounded-[3rem] overflow-hidden bg-slate-200 shadow-2xl border-[6px] md:border-[10px] border-white group transition-all duration-500">
+              {activeMedia ? (
+                isVideo(activeMedia) ? (
+                  <video
+                    ref={mediaRef}
+                    key={activeMedia} // Key ensures video reloads when source changes
+                    src={activeMedia}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    ref={mediaRef}
+                    src={activeMedia}
+                    alt="Listing"
+                    className="w-full h-full object-cover"
+                  />
+                )
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest">
+                  No Media Available
+                </div>
+              )}
 
-    {/* Minimalist Fullscreen Icon Button */}
-    <button 
-      onClick={() => {
-        const video = document.getElementById('shortlet-video');
-        if (video.requestFullscreen) video.requestFullscreen();
-        else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
-      }}
-      className="absolute bottom-6 right-6 bg-white/20 hover:bg-white/40 backdrop-blur-xl text-white p-4 rounded-full transition-all border border-white/30 shadow-2xl active:scale-90 z-20"
-      title="View Fullscreen"
-    >
-      <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="20" 
-        height="20" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      >
-        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-      </svg>
-    </button>
+              {/* Status Badge */}
+              <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-5 py-2 rounded-2xl shadow-xl z-10 flex items-center gap-2">
+                <ShieldCheck size={14} className="text-blue-600" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">
+                  Premium Stay
+                </p>
+              </div>
 
-    {/* Subtle Gradient Overlay for better contrast */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-  </div>
+              {/* Fullscreen Toggle */}
+              <button
+                onClick={toggleFullScreen}
+                className="absolute bottom-6 right-6 bg-white/20 hover:bg-white/40 backdrop-blur-xl text-white p-4 rounded-full transition-all border border-white/30 shadow-2xl active:scale-90 z-20"
+              >
+                <Maximize size={20} strokeWidth={2.5} />
+              </button>
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            </div>
+
+            {/* THUMBNAILS (For multiple images/videos) */}
+            {mediaItems.length > 1 && (
+              <div className="flex gap-3 mt-6 overflow-x-auto pb-4 no-scrollbar">
+                {mediaItems.map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveMedia(item.url)}
+                    className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-4 transition-all ${
+                      activeMedia === item.url ? "border-blue-600 scale-105" : "border-white opacity-70"
+                    }`}
+                  >
+                    {isVideo(item.url) ? (
+                      <video src={item.url} className="w-full h-full object-cover pointer-events-none" />
+                    ) : (
+                      <img src={item.url} className="w-full h-full object-cover" alt={`thumb-${idx}`} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="mt-12">
               <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-widest mb-4">
-                <MapPin size={16} />Ibadan.
+                <MapPin size={16} /> Ibadan.
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter mb-6 leading-tight">
+              <h1 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter mb-6 leading-tight uppercase">
                 {listing.address}
               </h1>
 
@@ -145,7 +202,7 @@ export default function ShortletDetail() {
               </h2>
               <p className="text-slate-600 leading-relaxed font-medium mb-4">
                 {listing.description ||
-                  "Indulge in a blend of luxury and comfort. This short-let is designed to provide a home-away-from-home experience, featuring modern aesthetics and top-tier hospitality services."}
+                  "Indulge in a blend of luxury and comfort. This short-let is designed to provide a home-away-from-home experience."}
               </p>
             </div>
           </div>
@@ -192,7 +249,8 @@ export default function ShortletDetail() {
 
               <button
                 onClick={handleBooking}
-                className="w-full py-4 bg-blue-600 text-white rounded-[2rem] font-black text-sm hover:bg-slate-950 transition-all shadow-xl shadow-blue-100 active:scale-[0.98]">
+                className="w-full py-4 bg-blue-600 text-white rounded-[2rem] font-black text-sm hover:bg-slate-950 transition-all shadow-xl shadow-blue-100 active:scale-[0.98]"
+              >
                 Reserve Space
               </button>
             </div>
